@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   })
        return res.status(200).json(user);
   } else {
-    res.status(200).json({ name: 'John Doe' })    
+    res.status(405).json({ message: 'method not allowed' })    
   }
 }
 
