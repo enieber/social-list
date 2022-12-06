@@ -12,35 +12,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const {
       email,
-      name,
       password,
     } = req.body
-    if (!email || !name || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: 'need params in request'
       });
     }
-    const passwordHash = await bcrypt.hash(password, saltRounds)
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      }
+    })
 
-    try {
-    const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: passwordHash,
-    },
-    })
-  return res.status(200).json({
-    email,
-    name
-  });
-  
-    } catch (err) {
+    if (user) {
+      const metchPassword = await bcrypt.compare(password, user.password)
+      if (metchPassword) {
+      return res.status(200).json({
+        token: 'new-token'
+      });   
+      
+      }
+    }
     return res.status(400).json({
-      message: 'invalid data'
+      message: 'invalid email or password'
     })
-    
-  }} else {
+  } else {
     res.status(405).json({ message: 'method not allowed' })    
   }
 }
