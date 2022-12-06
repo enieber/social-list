@@ -12,7 +12,7 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     const { bio, image, alt_image } = req.body;
-    const requestHeaders = new Headers(req.headers);
+    const requestHeaders = new Headers(req.headers as any);
     const [_, jwt] = requestHeaders.get("authorization").split(" ");
     const val = Buffer.from(jwt.split(".")[1], "base64").toString("ascii");
     const id = JSON.parse(val).sub;
