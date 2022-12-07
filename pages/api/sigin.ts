@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
-import fs from "fs";
 import prisma from "../../lib/prisma";
 
 const saltRounds = 10;
@@ -26,9 +25,8 @@ export default async function handler(
     if (user) {
       const metchPassword = await bcrypt.compare(password, user.password);
       if (metchPassword) {
-        const alg = "RS256";
-        const pem = fs.readFileSync("./rsakey.pem", "utf8");
-        const privateKey = await jose.importPKCS8(pem, alg);
+        const alg = "HS256";
+        const secret = new TextEncoder().encode(process.env.SECRET_KEY);
 
         const jwt = await new jose.SignJWT({
           "urn:supplist:claim": true,
@@ -39,7 +37,7 @@ export default async function handler(
           .setAudience("urn:supplist:app")
           .setExpirationTime("2h")
           .setSubject(user.id)
-          .sign(privateKey);
+          .sign(secret);
 
         return res.status(200).json({
           token: jwt,
